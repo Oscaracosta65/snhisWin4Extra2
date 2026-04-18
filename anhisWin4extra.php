@@ -765,7 +765,7 @@ foreach ($bonusSlots as $slotIndex => $slotCfg) {
     if ($slotValue === '' && !empty($slotRows)) {
         $slotValue = trim((string) ($slotRows[0][$slotCfg['column']] ?? ''));
     }
-    if ($slotValue !== '' && preg_match('/^[0-9]$/', $slotValue)) {
+    if ($slotValue !== '' && preg_match('/^[0-9]{1,2}$/', $slotValue)) {
         $latestBonusBalls[] = [
             'label' => (string) $slotCfg['label'],
             'value' => $slotValue,
@@ -775,7 +775,22 @@ foreach ($bonusSlots as $slotIndex => $slotCfg) {
     }
 }
 
-$latestResult = !empty($latestMain);
+// Fallback: recover extra-ball value already fetched by getLatestResult when the
+// row-based approach above found nothing (e.g. extra-ball rows use a different
+// draw_date format, or the DB has fewer than 8 rows for that game_id).
+if (empty($latestBonusBalls) && isset($pb) && $pb !== null && $pb !== '' && !empty($extraBallGId)) {
+    $pbVal = trim((string) $pb);
+    if ($pbVal !== '') {
+        $latestBonusBalls[] = [
+            'label'  => (string) $extraBallLabel,
+            'value'  => $pbVal,
+            'gameId' => (string) $extraBallGId,
+            'column' => 'first',
+        ];
+    }
+}
+
+$hasLatestDraw = !empty($latestMain);
 
 // draw range
 $drawRange = 100;
