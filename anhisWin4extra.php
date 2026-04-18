@@ -1476,6 +1476,13 @@ table.skai-table tbody tr:hover{background:rgba(28,102,255,.04)}
     frame.appendChild(empty);
   }
 
+  function setAllChartFallbacks(message) {
+    var ids = ['topActiveChart', 'quietChart', 'fullMainChart', 'starChart', 'recencyChart'];
+    for (var i = 0; i < ids.length; i++) {
+      setChartFallback(document.getElementById(ids[i]), message);
+    }
+  }
+
   function commonBarOptions(horizontal) {
     return {
       responsive: true,
@@ -1587,7 +1594,16 @@ table.skai-table tbody tr:hover{background:rgba(28,102,255,.04)}
       var script = document.createElement('script');
       script.id = scriptId;
       script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+      script.integrity = 'sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb';
+      script.crossOrigin = 'anonymous';
       script.async = true;
+      script.onerror = function () {
+        var fallback = document.createElement('script');
+        fallback.id = scriptId + '-fallback';
+        fallback.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+        fallback.async = true;
+        document.head.appendChild(fallback);
+      };
       document.head.appendChild(script);
     }
 
@@ -1602,6 +1618,7 @@ table.skai-table tbody tr:hover{background:rgba(28,102,255,.04)}
       }
       if (tries >= maxTries) {
         clearInterval(timer);
+        setAllChartFallbacks('Chart data is temporarily unavailable. Please refresh to try again.');
       }
     }, 150);
   }
